@@ -1,0 +1,15 @@
+# Large raw dataset and local caches (do not commit 4.5 GB of raw images)
+data/
+.cache*/
+*.zip
+
+# Large trained model checkpoints (>100 MB GitHub limit; host via Google Drive/S3)
+weights/*.pt
+weights/*.pth
+
+# Python / IDE / Virtualenv artifacts
+__pycache__/
+*.py[cod]
+.venv*/
+.ipynb_checkpoints/
+.DS_Store
