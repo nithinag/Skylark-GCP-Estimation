@@ -114,11 +114,21 @@ Trained checkpoints are saved to:
 
 ---
 
-## 7. Model Weights
+## 7. Model Weights & Observed Validation Results
 
-Place the trained checkpoints (generated via Google Colab training or downloaded from your Google Drive backup) into `weights/`:
-- `weights/stage1_best.pt`
-- `weights/stage2_best.pt`
+Training was executed on an **NVIDIA GeForce GTX 1650 (4 GB VRAM)** in FP32 with gradient accumulation (`grad_accum=4`) on `StratifiedGroupKFold` (`val_fold=3`, `803` train across 8 projects / `197` val across 3 unseen projects):
+
+| Pipeline Stage | PCK@10px | PCK@25px | PCK@50px | Median Error | Mean Error | Macro F1 |
+|---|---|---|---|---|---|---|
+| Stage 1 Coarse (`weights/stage1_best.pt`, Epoch 3) | 90.86% | 90.86% | 90.86% | 2.87 px | 162.08 px | — |
+| Stage 2 Oracle (`weights/stage2_best.pt`, Epoch 22) | 99.49% | 99.49% | 99.49% | 0.99 px | 1.97 px | 0.6130 |
+| **End-to-End Two-Stage** | **90.86%** | **90.86%** | **90.86%** | **1.04 px** | **160.09 px** | **0.6082** |
+
+- **Per-Class End-to-End F1:** `Cross = 0.4000`, `Square = 0.9104`, `L-Shape = 0.5143`.
+- **Checkpoints (excluded from Git due to >100 MB size):**
+  - `weights/stage1_best.pt` (`~280.8 MB`)
+  - `weights/stage2_best.pt` (`~286.8 MB`)
+  - Place downloaded weights in `weights/` before running `src.evaluate` or `src.predict`.
 
 ---
 
@@ -130,17 +140,17 @@ Evaluate end-to-end on the held-out `GroupKFold` validation split (reports `PCK@
 python -m src.evaluate --val-fold 3 --n-splits 5 --vis-output outputs/val_predictions.png
 ```
 
-Run end-to-end two-stage inference on all 300 test images to produce `outputs/predictions.json`:
+Run end-to-end two-stage inference on all 300 test images to produce `outputs/submission_predictions.json` (also copied to `submission/submission_predictions.json`):
 
 ```bash
 python -m src.predict \
   --test-dir data/test_dataset \
   --stage1-weights weights/stage1_best.pt \
   --stage2-weights weights/stage2_best.pt \
-  --output outputs/predictions.json
+  --output outputs/submission_predictions.json
 ```
 
-Output format matches `gcp_marks.json`:
+Output format matches `gcp_marks.json` (`300/300` entries; `L-Shape: 143`, `Cross: 96`, `Square: 61`):
 ```json
 {
   "project/survey/gcp_id/image.JPG": {
